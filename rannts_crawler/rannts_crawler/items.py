@@ -1,14 +1,38 @@
 # -*- coding: utf-8 -*-
 
-# Define here the models for your scraped items
-#
-# See documentation in:
-# http://doc.scrapy.org/en/latest/topics/items.html
 
+import re
+
+import dateparser
+import lxml.html
 import scrapy
+import scrapy.loader.processors as processors
 
 
-class RanntsCrawlerItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+def clean_text(text):
+    text = text.replace("</p>", "\n\n")
+    text = re.sub(r"<br\s*/?>", "\n", text)
+    text = lxml.html.document_fromstring(text).text_content()
+    text = text.strip()
+
+    return text
+
+
+def parse_date(text):
+    return dateparser.parse(text)
+
+
+class NewsItem(scrapy.Item):
+    title = scrapy.Field(
+        input_processor=processors.MapCompose(clean_text),
+        output_processor=processors.TakeFirst()
+    )
+    date = scrapy.Field(
+        input_processor=processors.MapCompose(clean_text, parse_date),
+        output_processor=processors.TakeFirst()
+    )
+    text = scrapy.Field(
+        input_processor=processors.MapCompose(clean_text),
+        output_processor=processors.TakeFirst()
+    )
+    text_links = scrapy.Field()
