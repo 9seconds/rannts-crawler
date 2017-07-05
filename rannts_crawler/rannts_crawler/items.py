@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import calendar
 import re
 
 import dateparser
@@ -19,7 +20,18 @@ def clean_text(text):
 
 
 def parse_date(text):
-    return dateparser.parse(text)
+    return dateparser.parse(
+        text,
+        languages=["ru"],
+        settings={
+            "TIMEZONE": "Europe/Moscow",
+            'RETURN_AS_TIMEZONE_AWARE': True
+        }
+    )
+
+
+def serialize_date(dtime):
+    return int(calendar.timegm(dtime.timetuple()))
 
 
 class NewsItem(scrapy.Item):
@@ -29,7 +41,8 @@ class NewsItem(scrapy.Item):
     )
     date = scrapy.Field(
         input_processor=processors.MapCompose(clean_text, parse_date),
-        output_processor=processors.TakeFirst()
+        output_processor=processors.TakeFirst(),
+        serializer=serialize_date
     )
     text = scrapy.Field(
         input_processor=processors.MapCompose(clean_text),
