@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import scrapy
 import scrapy.loader
-import dateparser
 
 from rannts_crawler import items
 from . import base
@@ -29,8 +27,8 @@ class NewsSpider(base.Spider):
         loader = scrapy.loader.ItemLoader(
             item=items.NewsItem(), response=response)
 
-        loader.add_css("title", ".hero-body h1.title::text")
-        loader.add_css("date", ".hero-body h2.subtitle::text")
+        loader.add_css("title", ".hero-body h1.title")
+        loader.add_css("date", ".hero-body h2.subtitle")
         loader.add_css("text", "section.section div.content")
         loader.add_value("text_links", [
             response.urljoin(link)
